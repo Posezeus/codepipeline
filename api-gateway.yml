@@ -1,0 +1,81 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: My API Gateway and Lambda function
+
+Resources:
+
+  LambdaFunction:
+    Type: AWS::Lambda::Function
+    Properties:
+      Handler: index.handler
+      Role: arn:aws:iam::835764170597:role/LambdaApiGatewayRole
+      Code:
+        S3Bucket: randolphbucket
+        S3Key: function.zip
+      Runtime: python3.9
+      Timeout: 5
+      TracingConfig:
+        Mode: Active
+      # VpcConfig:
+      #   SecurityGroupIds:
+      #     - sg-085912345678492fb
+      #   SubnetIds:
+      #     - subnet-071f712345678e7c8
+      #     - subnet-07fd123456788a036
+
+  DemoLambdaInvokePermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !Ref LambdaFunction
+      Action: "lambda:InvokeFunction"
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Sub arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${DemoApiGateway}/${DemoApiStage}/${DemoApiRoute}/
+
+      # SourceArn: !GetAtt LambdaFunction.Arn
+
+  DemoApiGateway:
+    Type: AWS::ApiGatewayV2::Api
+    Properties:
+      Name: Get started HTTP API
+      ProtocolType: HTTP
+
+  DemoIntegration:
+    Type: AWS::ApiGatewayV2::Integration
+    Properties:
+      ApiId: !Ref DemoApiGateway
+      Description: Lambda proxy integration
+      IntegrationType: AWS_PROXY
+      IntegrationMethod: POST
+      PayloadFormatVersion: "2.0"
+      IntegrationUri: !Sub 
+        - 'arn:${AWS::Partition}:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${LambdaFunction.Arn}/invocations'
+        - lambdaArn: !GetAtt LambdaFunction.Arn
+
+  
+  DemoApiRoute:
+    Type: AWS::ApiGatewayV2::Route
+    Properties:
+      ApiId: !Ref DemoApiGateway
+      RouteKey: "POST /demo"
+      AuthorizationType: NONE
+      Target: !Join
+        - /
+        - - integrations
+          - !Ref DemoIntegration
+
+  DemoApiStage:
+    Type: AWS::ApiGatewayV2::Stage
+    Properties:
+      ApiId: !Ref DemoApiGateway
+      StageName: Live
+      Description: Live Stage
+      AutoDeploy: true
+
+Outputs:
+
+  LambdaFunction1:
+    Description: Lambda functions
+    Value: !Ref LambdaFunction
+
+  ApiGateway:
+    Description: Api gateway
+    Value: !Ref DemoApiGateway
