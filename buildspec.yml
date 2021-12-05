@@ -44,7 +44,7 @@ phases:
     on-failure: ABORT 
     commands:
       - echo " Zipping code for deployment "
-      - zip package .zip *.py
+      - zip package.zip *.py
     # finally:
     #   - command
     #   - command
@@ -52,7 +52,7 @@ phases:
     # run-as: Linux-user-name
     on-failure: ABORT 
     commands:
-      - aws lambda update-function-code --Aws-codepipeline-LambdaFunction-Di8ftGaOjXWA --zip-file fileb://package.zip
+      - aws lambda update-function-code --function-name Aws-codepipeline-LambdaFunction-Di8ftGaOjXWA --zip-file fileb://package.zip
     # finally:
     #   - command
     #   - command
