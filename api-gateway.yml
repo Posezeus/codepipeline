@@ -6,7 +6,7 @@ Resources:
   LambdaFunction:
     Type: AWS::Lambda::Function
     Properties:
-      Handler: index.handler
+      Handler: function.lambda_handler
       Role: arn:aws:iam::835764170597:role/LambdaApiGatewayRole
       Code:
         S3Bucket: randolphbucket
