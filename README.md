@@ -1,2 +1,2 @@
 # codepipeline
-Pipeline for auto deploy api gateway and lambda
+Pipeline to auto deploy api gateway and lambda
